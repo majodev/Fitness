@@ -43,6 +43,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      - name: Downcase GITHUB_REPOSITORY and set as REPO (for docker image name)
+        run: |
+          echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -50,7 +54,7 @@ jobs:
           push: true
           tags: |
             ${{ steps.meta.outputs.tags }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.REPO }}:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
 
@@ -68,7 +72,7 @@ jobs:
       #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_DEV }}
       #     NAMESPACE: fitness-dev
       #   with:
-      #     args: -n ${{ env.NAMESPACE }} set image deployment/app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      #     args: -n ${{ env.NAMESPACE }} set image deployment/app app=${{ env.REPO }}:${{ github.sha }}
 
       # - name: Set image on prod cluster
       #   if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
@@ -77,4 +81,4 @@ jobs:
       #     KUBE_CONFIG: ${{ secrets.KUBE_CONFIG_PROD }}
       #     NAMESPACE: fitness-prod
       #   with:
-      #     args: -n ${{ env.NAMESPACE }} set image deployment/app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      #     args: -n ${{ env.NAMESPACE }} set image deployment/app app=${{ env.REPO }}:${{ github.sha }}
